@@ -8,19 +8,23 @@
 	
 	}
 	private $_instance = null;
-			public static function getInstance() {
-				if(!self::$_instance instanceof self) {
-					self::$_instance = new self();
-				}
-				return self::$_instance;	
-			}
-			public function load($maze)
-			{
-				if(apc_exists(self::MAZE_CACHE . $maze)) {
-
-
-				}
-			}
+	public static function getInstance() {
+		if(!self::$_instance instanceof self) {
+			self::$_instance = new self();
+		}
+		return self::$_instance;	
 	}
+	public function load($maze)
+	{
+		if(apc_exists(self::MAZE_CACHE . $maze)) {
+
+
+		}
+	}
+	public function store($key, $value) {
+		apc_store($key, $value);
+		return self::$_instance;
+	}
+}
 
 ?>
