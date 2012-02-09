@@ -2,7 +2,7 @@
 
 class loader {
 
-	private $_instance = null;
+	private static $_instance = null;
 	public static function getInstance() {
 		if(!self::$_instance instanceof self) {
 			self::$_instance = new self();
@@ -12,9 +12,12 @@ class loader {
 	
 	public function load($mazename, $start = 0, $end = 0) 
 	{
+	   worker::getInstance()->getMatrix($mazename);
+/*
 		if(empty(cache::getInstance()->load($mazename))) {
 				
 		   }
+*/		
 	}
 }
 ?>

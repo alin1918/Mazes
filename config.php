@@ -1,18 +1,12 @@
 <?php
 
-define('MAZES_DIR',BASEDIR . '/' . 'mazes' );
+define('DS', '/');
+define('MAZES_DIR',BASEDIR . DS . 'media' );
+
 function __autoload($name) {
 
-require_once(BASEDIR . '/' . 'class' . '/' . $name . '.php');
+require_once(BASEDIR . DS . 'class' . DS . $name . '.php');
 
-}
-
-try {
-
-
-} catch (Exception $e) {
-
-	echo $e->getMessage();
 }
 
 
