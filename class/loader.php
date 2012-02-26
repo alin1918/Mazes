@@ -32,8 +32,8 @@ class loader {
 		$this->_x_size = count($data[0]);
 		$this->_y_size = count($data);
 		$current = $start;
-		$xDif = $start[0] - $end[0];
-		$yDif = $start[1] - $end[1];
+		$xDif = $start['x'] - $end['x'];
+		$yDif = $start['y'] - $end['y'];
 		$this->_paths = array();
 		$this->_currentPath = array();
 		$this->_goodPaths = array(); 
@@ -45,6 +45,7 @@ class loader {
 				$finished = true;
 			}
 			$this->_currentPath[] = $current;
+			$this->checkSides($current,$data);
 		var_dump();
 		var_dump($this->_currentPath);die;
 				
@@ -55,18 +56,23 @@ class loader {
 
 	public function checkSides($current, $maze) {
 
+		$ways = 0;
 		if($this->canGoLeft($current,$maze)) {
+			$ways++;
+		}
+		if($this->canGoUp($current,$maze)) {
+			$ways++;
 
 		}
-		if($this->canGoLeft($current,$maze)) {
+		if($this->canGoRight($current,$maze)) {
+			$ways++;
 
 		}
-		if($this->canGoLeft($current,$maze)) {
+		if($this->canGoDown($current,$maze)) {
+			$ways++;
 
 		}
-		if($this->canGoLeft($current,$maze)) {
-
-		}
+		var_dump($ways);die;
 	}
 
 	public function copyPath($path)
@@ -102,28 +108,28 @@ class loader {
 	}
 
 	public function canGoLeft($current, $maze) {
-		if($maze[$current[0] + 1]  == 1) {
+		if($maze[$current['x'] - 1]  == 1) {
 			return true;
 		}
 		return false;
 
 	}
 	public function canGoUp($current, $maze) {
-		if($maze[$current[1] - 1]  == 1) {
+		if($maze[$current['y'] - 1]  == 1) {
 			return true;
 		}
 		return false;
 
 	}
 	public function canGoRight($current, $maze) {
-		if($maze[$current[0] - 1]  == 1) {
+		if($maze[$current['x'] + 1]  == 1) {
 			return true;
 		}
 		return false;
 
 	}
 	public function canGoDown($current, $maze) {
-		if($maze[$current[1] + 1]  == 1) {
+		if($maze[$current['y'] + 1]  == 1) {
 			return true;
 		}
 		return false;
