@@ -1,7 +1,7 @@
 <?php
 
 define ('BASEDIR', dirname(__FILE__));
-define ('DEBUG' , true);
+define ('DEBUG' , false);
 
 include(BASEDIR . '/config.php');
 
@@ -28,7 +28,6 @@ loader::getInstance()->load($_GET['maze'], array('x'=>$sx, 'y'=>$sy),array('x'=>
 } catch( Exception $e) {
 	echo $e->getMessage();
 }
-var_dump($_GET);die;
 
 
 
