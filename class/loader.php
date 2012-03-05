@@ -17,16 +17,18 @@ class loader {
 	{
 		$maze =    worker::getInstance()->getMatrix($mazename);
 
+		$maze['data'] = $this->solveMaze($maze['data'],$start,$end);
+
 		if(DEBUG) {
 		  $this->displayMaze($maze['data']);
 		}	
 
-		$result = $this->solveMaze($maze['data'],$start,$end);
 /*
 		if(empty(cache::getInstance()->load($mazename))) {
 				
 		   }
 */	
+		return $maze;
 	}
 
 
@@ -49,17 +51,14 @@ class loader {
 
 		$i = 0;
 		while(!$finished) {
-			echo ++$i,PHP_EOL;
-			if($current['y'] == $end['y'] && $current['x'] == $end['x']) {
-				//$finished = true;
-				echo 'found one';
-			}
-			$this->_currentPath['data'][] = $current;
 			try {
+
+				$this->_currentPath['data'][] = $current;
 				$next = $this->checkSides($current,$data);
 				$this->_last_pos = $current;
 				$current = $next;
 			} catch (Exception $e) {
+		//		echo $e->getMessage(),PHP_EOL;
 				if(!$this->setNextPath()) {
 					$finished = true;
 				} else {
@@ -69,16 +68,60 @@ class loader {
 				}
 			}
 
-		}
+			if($current['y'] == $end['y'] && $current['x'] == $end['x']) {
+			//	var_dump($current,$end);die;
+				$finished = $this->_setGoodPath();
+				$current = $this->_current;
+				//echo 'found one';
+			}
 
-		return $result;
+		}
+		$best = $this->getBestPath();
+
+
+		if(!DEBUG) {	
+			return $best;
+		} 
+		return $this->paintRoad($data,$best);
+//		return $this->paintRoad($data,$this->_paths[9]);
+	}
+	protected function _setGoodPath()
+	{
+		$finished = false;
+		$this->_currentPath['dead'] = true;
+		$this->_goodPaths[] = $this->_currentPath;
+		if(!$this->setNextPath(true)) {
+			$finished = true;
+		} else {
+			$size = count($this->_currentPath['data']);
+			$this->_current  = $this->_currentPath['data'][$size-1];
+			
+			$this->_last_pos = $this->_currentPath['data'][$size-2];
+		}
+		return $finished;
+	}
+	public function getBestPath()
+	{
+		$size = count($this->_goodPaths);
+		$b = 0;
+		$bsize = 999999999999999;
+		for($i = 0; $i < $size; $i++ ) {
+			if( ($cursize = count($this->_goodPaths[$i]['data'])) < $bsize) {
+				$bsize = $cursize;
+				$b  = $i;
+			}
+		}
+		return $this->_goodPaths[$b];
 	}
 
-	public function setNextPath()
+	public function setNextPath($good = false)
 	{
 		$count = count($this->_paths);
 		$this->_paths[$this->_currentPath['nr']] = $this->_currentPath;
-		$this->_setDeadPoints();
+		if(!$good) {
+			$this->_setDeadPoints();
+		}
+
 		for($i = 0; $i< $count; $i++) {
 			if($this->_paths[$i]['dead'] == false) {
 				$this->_currentPath = $this->_paths[$i];
@@ -111,7 +154,8 @@ class loader {
 			if(empty($left)) {
 				$next = array('y'=>$current['y']-1, 'x'=>$current['x']);
 			} else {
-				$this->copyPath();
+				$alt = array('y'=>$current['y']-1, 'x'=>$current['x']);
+				$this->copyPath($alt);
 			}
 			$ways++;
 
@@ -121,7 +165,8 @@ class loader {
 			if(empty($left) && empty($up)) {
 				$next = array('y'=>$current['y'], 'x'=>$current['x'] + 1);
 			} else {
-				$this->copyPath();
+				$alt = array('y'=>$current['y'], 'x'=>$current['x'] + 1);
+				$this->copyPath($alt);
 			}
 			$ways++;
 
@@ -130,7 +175,8 @@ class loader {
 			if(empty($left) && empty($up) && empty($right)) {
 				$next = array('y'=>$current['y']+1, 'x'=>$current['x']);
 			} else {
-				$this->copyPath();
+				$alt = array('y'=>$current['y']+1, 'x'=>$current['x']);
+				$this->copyPath($alt);
 			}
 			$down = true;
 			$ways++;
@@ -143,9 +189,17 @@ class loader {
 		throw new Exception ('Not found here');
 	}
 
-	public function copyPath()
+	public function copyPath($next = array())
 	{
 		$path = $this->_currentPath;
+		if(!empty($next)) {
+			if($next['y']== 93 && $next['x'] ==55) {
+//			var_dump(count($this->_paths));die;
+			}
+			
+			$path['data'][] = $next;
+		}
+
 		$nr = count($this->_paths);
 		$this->_paths[$nr] = $path;
 		$this->_paths[$nr]['nr'] = $nr;
@@ -153,8 +207,11 @@ class loader {
 	}
 	public function paintRoad($data,$road)
 	{
-
-
+		$colsize = count ($data);
+		foreach($road['data'] as $eachI) {
+			$data[$eachI['y']][$eachI['x']] = 2;
+		}
+		return $data;
 	}
 	public function displayMaze($data)
 	{
@@ -165,12 +222,12 @@ class loader {
 			$rowsize = count ($data[$i]);
 			for($j = 0; $j < $rowsize; $j++) {
 				if($data[$i][$j] == 1) {
-					echo '<td style="background-color:green;font-size:6px;width:2px;height:2px;font-size:2px;" data="i:',$i,',j:',$j,'"></td>';	
+					echo '<td style="background-color:green;font-size:6px;width:2px;height:2px;font-size:2px;" data="y:',$i,',x:',$j,'"></td>';	
 				} else if($data[$i][$j] == 2) {
-					echo '<td style="background-color:blue;font-size:6px;width:2px;height:2px;font-size:2px;" data="i:',$i,',j:',$j,'"></td>';	
+					echo '<td style="background-color:blue;font-size:6px;width:2px;height:2px;font-size:2px;" data="y:',$i,',x:',$j,'"></td>';	
 
 				}  else {	
-					echo '<td style="background-color:red";font-size:6px;width:2px;height:2px;font-size:2px;" data="i:',$i,',j:',$j,'"></td>';	
+					echo '<td style="background-color:red";font-size:6px;width:2px;height:2px;font-size:2px;" data="y:',$i,',x:',$j,'"></td>';	
 				}
 			}
 			echo '</tr>';	

@@ -2,11 +2,7 @@
 
 define ('BASEDIR', dirname(__FILE__));
 
-if(php_sapi_name() == 'cli') {
-	define ('DEBUG' , false);
-} else {
-	define ('DEBUG' , true);
-}
+define ('DEBUG' , false);
 
 
 include(BASEDIR . '/config.php');
@@ -36,7 +32,20 @@ if(is_null($sx) || is_null($sy) || is_null($ex) || is_null($ey)){
 }
 
 try {
-loader::getInstance()->load($_GET['maze'], array('x'=>$sx, 'y'=>$sy),array('x'=> $ex, 'y'=> $ey));
+	$response = loader::getInstance()->load($_GET['maze'], array('x'=>$sx, 'y'=>$sy),array('x'=> $ex, 'y'=> $ey));
+	$worked = array_map(function($x) {
+				return array((int) $x['x'], (int) $x['y']);
+				},$response['data']['data']
+			   );
+	$return = array('type'=>'Feature',
+			'proprietes'=>array(),
+			'geometry' => array(
+						"type" =>  "LineString",
+						"coordinates" => $worked,
+					   ),
+			);	
+	echo json_encode($return);
+
 } catch( Exception $e) {
 	echo $e->getMessage();
 }
